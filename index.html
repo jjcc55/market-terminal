@@ -90,6 +90,19 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .b-uptrend  { background: rgba(0,255,136,.10);   color: #00ff88; border: 1px solid rgba(0,255,136,.25); }
 .b-hold     { background: rgba(55,65,81,.2);     color: #6b7280; border: 1px solid #1e1e2e; }
 
+/* ── Industry dropdown ── */
+.industry-select {
+  background: #111118; border: 1px solid #1e1e2e; border-radius: 6px;
+  padding: 7px 28px 7px 12px; color: #e2e8f0; font-family: inherit;
+  font-size: 12px; outline: none; cursor: pointer; transition: border-color .2s;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  max-width: 220px;
+}
+.industry-select:focus { border-color: #00ff88; }
+.industry-select option { background: #111118; color: #e2e8f0; }
+
 /* ── Commodity name column (wider, wrappable) ── */
 .comm-name { color: #94a3b8; min-width: 200px; max-width: 280px; white-space: normal; line-height: 1.4; }
 
@@ -143,6 +156,9 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
         <span class="search-icon">⌕</span>
         <input type="text" id="stocks-search" placeholder="Search ticker or name…" oninput="filterStocks()">
       </div>
+      <select class="industry-select" id="stocks-industry" onchange="filterStocks()">
+        <option value="">All Industries</option>
+      </select>
       <button class="fbtn on" onclick="setStocksFilter('all',this)">ALL</button>
       <button class="fbtn" onclick="setStocksFilter('dip',this)">🔥 DIP BUYS</button>
       <button class="fbtn" onclick="setStocksFilter('momentum',this)">📈 MOMENTUM</button>
@@ -320,6 +336,7 @@ const URL_COMMS  = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4Fuyjq
 // ── State ─────────────────────────────────────────────────────────────────────
 let DATA = { stocks: [], etfs: [], comms: [] };
 let FILTER = { stocks: 'all', etfs: 'all', comms: 'all' };
+let INDUSTRY = '';
 let SEARCH = { stocks: '', etfs: '', comms: '' };
 let SORT = {
   stocks: { col: 8, dir: -1 },
@@ -457,6 +474,7 @@ function sortRows(rows, keys, sortState) {
 function renderStocks() {
   let rows = DATA.stocks.filter(r => {
     if (FILTER.stocks !== 'all' && r.sig !== FILTER.stocks) return false;
+    if (INDUSTRY && r.industry !== INDUSTRY) return false;
     if (SEARCH.stocks) {
       const q = SEARCH.stocks.toLowerCase();
       if (!r.ticker.toLowerCase().includes(q) && !r.name.toLowerCase().includes(q)) return false;
@@ -490,12 +508,25 @@ function renderStocks() {
     <div class="card"><div class="card-label">HOLD</div><div class="card-value v-muted">${c.hold}</div></div>`;
 }
 
-function filterStocks() { SEARCH.stocks = document.getElementById('stocks-search').value; renderStocks(); }
+function filterStocks() {
+  SEARCH.stocks = document.getElementById('stocks-search').value;
+  INDUSTRY = document.getElementById('stocks-industry').value;
+  renderStocks();
+}
 function setStocksFilter(f, el) {
   FILTER.stocks = f;
   document.querySelectorAll('#panel-stocks .fbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   renderStocks();
+}
+function populateIndustryDropdown() {
+  const industries = [...new Set(DATA.stocks.map(r => r.industry).filter(Boolean))].sort();
+  const sel = document.getElementById('stocks-industry');
+  // Preserve current selection if it still exists
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">All Industries</option>' +
+    industries.map(i => `<option value="${i}"${i === prev ? ' selected' : ''}>${i}</option>`).join('');
+  INDUSTRY = sel.value;
 }
 
 // ── ETFs ──────────────────────────────────────────────────────────────────────
@@ -624,6 +655,7 @@ async function loadAll() {
       pe:       num(r[8]),
       sig:      stockSig(r[10] || ''),
     }));
+    populateIndustryDropdown();
     renderStocks();
     showState('stocks','content');
   } else {
