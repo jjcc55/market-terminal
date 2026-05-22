@@ -87,7 +87,26 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .b-funddip  { background: rgba(6,182,212,.12);   color: #06b6d4; border: 1px solid rgba(6,182,212,.3); }
 .b-trendup  { background: rgba(34,211,238,.12);  color: #22d3ee; border: 1px solid rgba(34,211,238,.3); }
 .b-cyclical { background: rgba(139,92,246,.12);  color: #8b5cf6; border: 1px solid rgba(139,92,246,.3); }
+.b-uptrend  { background: rgba(0,255,136,.10);   color: #00ff88; border: 1px solid rgba(0,255,136,.25); }
 .b-hold     { background: rgba(55,65,81,.2);     color: #6b7280; border: 1px solid #1e1e2e; }
+
+/* ── Commodity name column (wider, wrappable) ── */
+.comm-name { color: #94a3b8; min-width: 200px; max-width: 280px; white-space: normal; line-height: 1.4; }
+
+/* ── ReadMe panel ── */
+.readme { max-width: 760px; padding: 4px 0 40px; }
+.readme h2 { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #00ff88; margin: 32px 0 12px; text-transform: uppercase; }
+.readme h2:first-child { margin-top: 0; }
+.readme p { font-size: 12px; color: #94a3b8; line-height: 1.8; margin-bottom: 10px; }
+.readme .signal-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.readme .signal-row .badge { flex-shrink: 0; margin-top: 2px; }
+.readme .signal-desc { font-size: 12px; color: #94a3b8; line-height: 1.7; }
+.readme .signal-desc strong { color: #e2e8f0; font-weight: 600; }
+.readme table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.readme table th { padding: 8px 12px; text-align: left; font-size: 10px; letter-spacing: 1px; color: #64748b; border-bottom: 1px solid #1e1e2e; background: #0d0d14; }
+.readme table td { padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #111118; vertical-align: top; }
+.readme table td:first-child { color: #e2e8f0; white-space: nowrap; }
+.readme .note { font-size: 11px; color: #475569; background: #0d0d14; border: 1px solid #1e1e2e; border-radius: 6px; padding: 12px 16px; margin-top: 24px; line-height: 1.7; }
 
 /* ── State boxes ── */
 .state-box { text-align: center; padding: 80px 32px; }
@@ -111,6 +130,7 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
   <div class="tab active" onclick="switchTab('stocks',this)">⚡ STOCKS</div>
   <div class="tab" onclick="switchTab('etfs',this)">💼 ETFs</div>
   <div class="tab" onclick="switchTab('commodities',this)">⛏ COMMODITIES</div>
+  <div class="tab" onclick="switchTab('readme',this)" style="margin-left:auto">📖 READ ME</div>
 </div>
 
 <!-- STOCKS -->
@@ -137,7 +157,7 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
           <th onclick="sSort('stocks',2)">INDUSTRY</th>
           <th onclick="sSort('stocks',3)" class="num">PRICE</th>
           <th onclick="sSort('stocks',4)" class="num">DAY %</th>
-          <th onclick="sSort('stocks',5)" class="num">DROP %</th>
+          <th onclick="sSort('stocks',5)" class="num">DROP vs 30d HIGH</th>
           <th onclick="sSort('stocks',6)" class="num">MCAP $B</th>
           <th onclick="sSort('stocks',7)" class="num">P/E</th>
           <th onclick="sSort('stocks',8)">SIGNAL</th>
@@ -177,7 +197,7 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
           <th onclick="sSort('etfs',2)">CATEGORY</th>
           <th onclick="sSort('etfs',3)" class="num">PRICE</th>
           <th onclick="sSort('etfs',4)" class="num">DAY %</th>
-          <th onclick="sSort('etfs',5)" class="num">DROP %</th>
+          <th onclick="sSort('etfs',5)" class="num">DROP vs 30d HIGH</th>
           <th onclick="sSort('etfs',6)" class="num">vs 100d MA</th>
           <th onclick="sSort('etfs',7)">SIGNAL</th>
         </tr></thead>
@@ -202,8 +222,8 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
         <input type="text" id="comms-search" placeholder="Search…" oninput="filterComms()">
       </div>
       <button class="fbtn on" onclick="setCommsFilter('all',this)">ALL</button>
+      <button class="fbtn" onclick="setCommsFilter('uptrend',this)">📈 UPTREND</button>
       <button class="fbtn" onclick="setCommsFilter('cyclical',this)">⚒ CYCLICAL DIP</button>
-      <button class="fbtn" onclick="setCommsFilter('hold',this)">HOLD</button>
       <button class="reload-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
     <div class="table-wrap">
@@ -225,6 +245,69 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
   <div id="comms-error" style="display:none" class="state-box">
     <p class="err-title">⚠ Failed to load commodity data</p>
     <p id="comms-err-msg"></p>
+  </div>
+</div>
+
+<!-- READ ME -->
+<div id="panel-readme" class="panel">
+  <div class="readme">
+
+    <h2>About This Dashboard</h2>
+    <p>Market Terminal is a live screening dashboard that monitors ~500 S&P 500 + MidCap 400 stocks, ~94 ETFs, and 11 macro commodity proxies. Data is pulled automatically via a Google Apps Script that refreshes prices and recalculates signals. The dashboard reads live from the sheet every time you open or refresh it — no manual export needed.</p>
+
+    <h2>⚡ Stock Signals</h2>
+    <div class="signal-row">
+      <span class="badge b-dip">🔥 BUY GUARDED DIP</span>
+      <div class="signal-desc"><strong>Dip within a healthy range</strong> — the stock has dropped between 5% and 15% from its 30-day peak, while still meeting quality filters (Market Cap ≥ $8B, P/E ≤ 55). Targets quality names that have pulled back but haven't broken down.</div>
+    </div>
+    <div class="signal-row">
+      <span class="badge b-momentum">📈 MOMENTUM ALERT</span>
+      <div class="signal-desc"><strong>Trend confirmation</strong> — price is within 5% of its 30-day high AND more than 8% above its 100-day moving average, with the same quality filters (MCap ≥ $8B, P/E ≤ 55). Flags names showing sustained momentum worth following.</div>
+    </div>
+    <div class="signal-row">
+      <span class="badge b-hold">HOLD</span>
+      <div class="signal-desc"><strong>No active signal</strong> — the stock doesn't meet the thresholds for either a dip buy or momentum alert. Could be range-bound, in a deeper drawdown, or outside the quality filters.</div>
+    </div>
+
+    <h2>💼 ETF Signals</h2>
+    <div class="signal-row">
+      <span class="badge b-funddip">💎 BUY FUND DIP</span>
+      <div class="signal-desc"><strong>Dip above the trend line</strong> — the ETF has dropped 3–8% from its 30-day high while still trading above its 100-day moving average. A tactical entry into a fund that remains in an uptrend structurally.</div>
+    </div>
+    <div class="signal-row">
+      <span class="badge b-trendup">📈 ETF TREND UP</span>
+      <div class="signal-desc"><strong>Trend strength confirmed</strong> — price is within 2% of its 30-day high AND more than 5% above its 100-day MA. The fund is showing broad-based momentum with minimal pullback.</div>
+    </div>
+    <div class="signal-row">
+      <span class="badge b-hold">HOLD</span>
+      <div class="signal-desc"><strong>Neutral or below the trend</strong> — ETF is either in a neutral zone or trading below its 100-day MA, which disqualifies it from both signals regardless of other conditions.</div>
+    </div>
+
+    <h2>⛏ Commodity Signals</h2>
+    <div class="signal-row">
+      <span class="badge b-cyclical">⚒ BUY CYCLICAL DIP</span>
+      <div class="signal-desc"><strong>Macro accumulation zone</strong> — the commodity proxy has dropped 6–18% from its 30-day peak AND is within 15% of its 52-week low. Targets cyclical assets at historically attractive re-entry points.</div>
+    </div>
+    <div class="signal-row">
+      <span class="badge b-uptrend">📈 STRUCTURAL UPTREND</span>
+      <div class="signal-desc"><strong>Macro tailwind intact</strong> — price is above the 30-day, 100-day, and 200-day moving averages, confirming a sustained structural uptrend across multiple timeframes.</div>
+    </div>
+
+    <h2>Column Reference</h2>
+    <table>
+      <thead><tr><th>COLUMN</th><th>DESCRIPTION</th></tr></thead>
+      <tbody>
+        <tr><td>DAY %</td><td>Price change since yesterday's close</td></tr>
+        <tr><td>DROP vs 30d HIGH</td><td>How far the price has fallen from its peak over the last 30 trading days. Used to detect dip-buy setups.</td></tr>
+        <tr><td>MCAP $B</td><td>Market capitalisation in billions USD. Quality filter: signals only fire for MCap ≥ $8B.</td></tr>
+        <tr><td>P/E</td><td>Price-to-earnings ratio. Quality filter: signals only fire for P/E ≤ 55 (or if no P/E data is available).</td></tr>
+        <tr><td>vs 100d MA</td><td>How far the current price sits above or below the 100-day moving average, expressed as a percentage.</td></tr>
+        <tr><td>vs 30d / 100d / 200d MA</td><td>Commodities: deviation of the current price from each moving average. Positive = price above the MA (bullish), negative = below (bearish).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">⚠ <strong>Not financial advice.</strong> This dashboard is a personal screening tool to surface names worth researching further. Signals indicate conditions that historically precede opportunities — they do not guarantee future performance. Always do your own due diligence before making any investment decision.</div>
+
   </div>
 </div>
 
@@ -300,7 +383,8 @@ function etfSig(action) {
 }
 function commSig(action) {
   const a = (action || '').toUpperCase();
-  if (a.includes('CYCLICAL') || a.includes('BUY CYCLICAL') || a.includes('ACCUMULATE')) return 'cyclical';
+  if (a.includes('CYCLICAL') || a.includes('ACCUMULATE')) return 'cyclical';
+  if (a.includes('UPTREND') || a.includes('STRUCTURAL')) return 'uptrend';
   return 'hold';
 }
 
@@ -312,6 +396,7 @@ function badge(sig) {
     funddip:  ['b-funddip',  '💎 BUY FUND DIP'],
     trendup:  ['b-trendup',  '📈 ETF TREND UP'],
     cyclical: ['b-cyclical', '⚒ BUY CYCLICAL DIP'],
+    uptrend:  ['b-uptrend',  '📈 STRUCTURAL UPTREND'],
     hold:     ['b-hold',     'HOLD'],
   };
   const [cls, lbl] = M[sig] || M.hold;
@@ -320,7 +405,7 @@ function badge(sig) {
 
 // Signal sort weight (signals bubble to top by default)
 function sigW(sig) {
-  return { dip: 3, momentum: 2, funddip: 3, trendup: 2, cyclical: 3, hold: 0 }[sig] || 0;
+  return { dip: 3, momentum: 2, funddip: 3, trendup: 2, cyclical: 3, uptrend: 1, hold: 0 }[sig] || 0;
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
@@ -473,7 +558,7 @@ function renderComms() {
   document.getElementById('comms-body').innerHTML = rows.map(r => `
     <tr>
       <td class="ticker">${r.ticker}</td>
-      <td><div class="co-name" title="${r.name}">${r.name}</div></td>
+      <td><div class="comm-name">${r.name}</div></td>
       <td><div class="industry">${r.sector}</div></td>
       <td class="num">${fmtP(r.price)}</td>
       <td class="num ${pcls(r.vs30)}">${r.vs30 != null ? fmtPct(r.vs30) : '—'}</td>
@@ -484,10 +569,11 @@ function renderComms() {
 
   updateSortHeaders('comms-table', SORT.comms);
 
-  const c = { cyclical:0, hold:0 };
+  const c = { cyclical:0, uptrend:0, hold:0 };
   DATA.comms.forEach(r => c[r.sig] = (c[r.sig]||0)+1);
   document.getElementById('comms-cards').innerHTML = `
     <div class="card"><div class="card-label">TOTAL</div><div class="card-value v-muted">${DATA.comms.length}</div></div>
+    <div class="card"><div class="card-label">📈 STRUCTURAL UPTREND</div><div class="card-value v-green">${c.uptrend}</div></div>
     <div class="card"><div class="card-label">⚒ CYCLICAL DIPS</div><div class="card-value v-purple">${c.cyclical}</div></div>
     <div class="card"><div class="card-label">HOLD</div><div class="card-value v-muted">${c.hold}</div></div>`;
 }
