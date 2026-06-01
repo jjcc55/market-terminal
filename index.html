@@ -325,8 +325,9 @@ td.m-sig-col { vertical-align: middle; }
 
   .panel      { padding: 16px; }
 
-  .cards      { gap: 10px; }
-  .card       { padding: 10px 14px; min-width: 100px; }
+  /* 2x2 card grid — prevents overflow on narrow screens */
+  .cards      { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card       { padding: 10px 14px; min-width: unset; }
   .card-value { font-size: 22px; }
 
   .controls   { gap: 7px; }
@@ -339,6 +340,9 @@ td.m-sig-col { vertical-align: middle; }
 
   /* Tighter badges in table cells so signal column fits */
   tbody .badge { font-size: 9px; padding: 2px 5px; letter-spacing: 0; }
+
+  /* GUARDED DIP wraps to two centered lines on mobile */
+  tbody .b-dip { white-space: normal; text-align: center; line-height: 1.4; max-width: 58px; }
 }
 </style>
 </head>
