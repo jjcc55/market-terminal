@@ -145,6 +145,21 @@ body {
 }
 .reload-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ── Pagination ── */
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; padding: 12px 0; font-size: 11px;
+}
+.page-btn {
+  padding: 5px 14px; border-radius: 6px; border: 1px solid var(--bd);
+  background: transparent; color: var(--txt3); font-family: inherit;
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  cursor: pointer; transition: all .15s;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.page-btn:disabled { opacity: .3; cursor: default; }
+.page-info { color: var(--txt3); letter-spacing: .5px; }
+
 /* ── Table ── */
 .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--bd); }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -206,13 +221,45 @@ body.light .b-uptrend  { background: rgba(22,163,74,.12);   color: #16a34a; bord
 /* ── Commodity name column ── */
 .comm-name { color: var(--txt2); min-width: 200px; max-width: 280px; white-space: normal; line-height: 1.4; }
 
+/* ── Insights panel ── */
+.insights { max-width: 760px; padding: 4px 0 40px; }
+.insights-ts { font-size: 10px; color: var(--txt3); letter-spacing: 1px; margin-bottom: 20px; }
+.insights-body {
+  background: var(--bg2); border: 1px solid var(--bd);
+  border-radius: 8px; padding: 20px 24px;
+}
+.insight-section { margin-bottom: 22px; }
+.insight-section:last-child { margin-bottom: 0; }
+.insight-label {
+  font-size: 13px; letter-spacing: 2px; font-weight: 700;
+  color: var(--accent); margin-bottom: 10px; text-transform: uppercase;
+}
+.insight-list { list-style: none; padding: 0; margin: 0; }
+.insight-list li {
+  font-size: 12px; color: var(--txt2); line-height: 1.75;
+  padding: 6px 0 6px 18px; position: relative;
+  border-bottom: 1px solid var(--bd2);
+}
+.insight-list li:last-child { border-bottom: none; }
+.insight-list li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+.insight-ticker { color: var(--accent); font-weight: 700; letter-spacing: .5px; }
+.insight-outlook {
+  font-size: 12px; color: var(--txt3); line-height: 1.75;
+  padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--bd);
+  font-style: italic;
+}
+.insights-stale {
+  font-size: 11px; color: var(--txt3); margin-top: 14px;
+  padding: 10px 14px; border: 1px solid var(--bd); border-radius: 6px;
+}
+
 /* ── ReadMe panel ── */
 .readme { max-width: 760px; padding: 4px 0 40px; }
 .readme h2 { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--accent); margin: 32px 0 12px; text-transform: uppercase; }
 .readme h2:first-child { margin-top: 0; }
 .readme p { font-size: 12px; color: var(--txt2); line-height: 1.8; margin-bottom: 10px; }
 .readme .signal-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
-.readme .signal-row .badge { flex-shrink: 0; margin-top: 2px; }
+.readme .signal-row .badge { flex-shrink: 0; margin-top: 2px; width: 130px; text-align: center; }
 .readme .signal-desc { font-size: 12px; color: var(--txt2); line-height: 1.7; }
 .readme .signal-desc strong { color: var(--txt); font-weight: 600; }
 .readme table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
@@ -287,8 +334,11 @@ td.m-sig-col { vertical-align: middle; }
   .industry-select    { max-width: 160px; }
   .reload-btn { margin-left: 0; }
 
-  thead th    { padding: 9px 10px; font-size: 8px; }
-  tbody td    { padding: 9px 10px; }
+  thead th    { padding: 8px 7px; font-size: 7px; }
+  tbody td    { padding: 8px 7px; }
+
+  /* Tighter badges in table cells so signal column fits */
+  tbody .badge { font-size: 9px; padding: 2px 5px; letter-spacing: 0; }
 }
 </style>
 </head>
@@ -299,15 +349,16 @@ td.m-sig-col { vertical-align: middle; }
   <div class="header-right">
     <div class="live-badge"><div class="dot"></div>LIVE</div>
     <div class="header-meta" id="last-updated">Fetching data…</div>
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">☀️</button>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">LIGHT</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('stocks',this)">⚡ STOCKS</div>
-  <div class="tab" onclick="switchTab('etfs',this)">💼 ETFs</div>
-  <div class="tab" onclick="switchTab('commodities',this)">⛏ COMMODITIES</div>
-  <div class="tab" onclick="switchTab('readme',this)" style="margin-left:auto">📖 READ ME</div>
+  <div class="tab active" onclick="switchTab('stocks',this)">STOCKS</div>
+  <div class="tab" onclick="switchTab('etfs',this)">ETFs</div>
+  <div class="tab" onclick="switchTab('commodities',this)">COMMODITIES</div>
+  <div class="tab" onclick="switchTab('insights',this)">INSIGHTS</div>
+  <div class="tab" onclick="switchTab('readme',this)" style="margin-left:auto">READ ME</div>
 </div>
 
 <!-- STOCKS -->
@@ -324,8 +375,8 @@ td.m-sig-col { vertical-align: middle; }
         <option value="">All Industries</option>
       </select>
       <button class="fbtn on" onclick="setStocksFilter('all',this)">ALL</button>
-      <button class="fbtn" onclick="setStocksFilter('dip',this)">🔥 DIP BUYS</button>
-      <button class="fbtn" onclick="setStocksFilter('momentum',this)">📈 MOMENTUM</button>
+      <button class="fbtn" onclick="setStocksFilter('dip',this)">GUARDED DIPS</button>
+      <button class="fbtn" onclick="setStocksFilter('momentum',this)">MOMENTUM</button>
       <button class="fbtn" onclick="setStocksFilter('hold',this)">HOLD</button>
       <button class="reload-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
@@ -351,9 +402,10 @@ td.m-sig-col { vertical-align: middle; }
         <tbody id="stocks-body"></tbody>
       </table>
     </div>
+    <div class="pagination" id="stocks-pagination"></div>
   </div>
   <div id="stocks-error" style="display:none" class="state-box">
-    <p class="err-title">⚠ Failed to load stock data</p>
+    <p class="err-title">Failed to load stock data</p>
     <p id="stocks-err-msg"></p>
     <p style="margin-top:12px">Make sure the sheet is shared and try refreshing.</p>
   </div>
@@ -370,8 +422,8 @@ td.m-sig-col { vertical-align: middle; }
         <input type="text" id="etfs-search" placeholder="Search ticker or name…" oninput="filterETFs()">
       </div>
       <button class="fbtn on" onclick="setETFsFilter('all',this)">ALL</button>
-      <button class="fbtn" onclick="setETFsFilter('funddip',this)">💎 FUND DIP</button>
-      <button class="fbtn" onclick="setETFsFilter('trendup',this)">📈 TREND UP</button>
+      <button class="fbtn" onclick="setETFsFilter('funddip',this)">FUND DIP</button>
+      <button class="fbtn" onclick="setETFsFilter('trendup',this)">TREND UP</button>
       <button class="fbtn" onclick="setETFsFilter('hold',this)">HOLD</button>
       <button class="reload-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
@@ -394,9 +446,10 @@ td.m-sig-col { vertical-align: middle; }
         <tbody id="etfs-body"></tbody>
       </table>
     </div>
+    <div class="pagination" id="etfs-pagination"></div>
   </div>
   <div id="etfs-error" style="display:none" class="state-box">
-    <p class="err-title">⚠ Failed to load ETF data</p>
+    <p class="err-title">Failed to load ETF data</p>
     <p id="etfs-err-msg"></p>
   </div>
 </div>
@@ -412,8 +465,8 @@ td.m-sig-col { vertical-align: middle; }
         <input type="text" id="comms-search" placeholder="Search…" oninput="filterComms()">
       </div>
       <button class="fbtn on" onclick="setCommsFilter('all',this)">ALL</button>
-      <button class="fbtn" onclick="setCommsFilter('uptrend',this)">📈 UPTREND</button>
-      <button class="fbtn" onclick="setCommsFilter('cyclical',this)">⚒ CYCLICAL DIP</button>
+      <button class="fbtn" onclick="setCommsFilter('uptrend',this)">UPTREND</button>
+      <button class="fbtn" onclick="setCommsFilter('cyclical',this)">CYCLICAL DIP</button>
       <button class="reload-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
     <div class="table-wrap">
@@ -435,10 +488,28 @@ td.m-sig-col { vertical-align: middle; }
         <tbody id="comms-body"></tbody>
       </table>
     </div>
+    <div class="pagination" id="comms-pagination"></div>
   </div>
   <div id="comms-error" style="display:none" class="state-box">
-    <p class="err-title">⚠ Failed to load commodity data</p>
+    <p class="err-title">Failed to load commodity data</p>
     <p id="comms-err-msg"></p>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div id="panel-insights" class="panel">
+  <div class="insights">
+    <div id="insights-loading" class="state-box"><div class="spinner"></div><p>Loading insights…</p></div>
+    <div id="insights-content" style="display:none">
+      <div class="insights-ts" id="insights-ts"></div>
+      <div class="insights-body" id="insights-body"></div>
+      <div class="insights-stale">Insights are generated by Gemini each time the screener refreshes. Refresh the page to pick up the latest run.</div>
+    </div>
+    <div id="insights-error" style="display:none" class="state-box">
+      <p class="err-title">Could not load insights</p>
+      <p id="insights-err-msg"></p>
+      <p style="margin-top:12px">The Insights sheet tab may not exist yet — run the Apps Script at least once to generate it.</p>
+    </div>
   </div>
 </div>
 
@@ -451,13 +522,13 @@ td.m-sig-col { vertical-align: middle; }
     <h2>About This Dashboard</h2>
     <p>Market Terminal is a live screening dashboard that monitors ~500 S&P 500 + MidCap 400 stocks, ~94 ETFs, and 11 macro commodity proxies. Data is pulled automatically via a Google Apps Script that refreshes prices and recalculates signals. The dashboard reads live from the sheet every time you open or refresh it — no manual export needed.</p>
 
-    <h2>⚡ Stock Signals</h2>
+    <h2>Stock Signals</h2>
     <div class="signal-row">
-      <span class="badge b-dip">🔥 BUY GUARDED DIP</span>
+      <span class="badge b-dip">GUARDED DIP</span>
       <div class="signal-desc"><strong>Dip within a healthy range</strong> — the stock has dropped between 5% and 25% from its 30-day peak, while still meeting quality filters (Market Cap ≥ $8B, P/E ≤ 55). Targets quality names that have pulled back but haven't broken down.</div>
     </div>
     <div class="signal-row">
-      <span class="badge b-momentum">📈 MOMENTUM ALERT</span>
+      <span class="badge b-momentum">MOMENTUM</span>
       <div class="signal-desc"><strong>Trend confirmation</strong> — price is within 5% of its 30-day high AND more than 8% above its 100-day moving average, with the same quality filters (MCap ≥ $8B, P/E ≤ 55). Flags names showing sustained momentum worth following.</div>
     </div>
     <div class="signal-row">
@@ -465,13 +536,13 @@ td.m-sig-col { vertical-align: middle; }
       <div class="signal-desc"><strong>No active signal</strong> — the stock doesn't meet the thresholds for either a dip buy or momentum alert. Could be range-bound, in a deeper drawdown, or outside the quality filters.</div>
     </div>
 
-    <h2>💼 ETF Signals</h2>
+    <h2>ETF Signals</h2>
     <div class="signal-row">
-      <span class="badge b-funddip">💎 BUY FUND DIP</span>
+      <span class="badge b-funddip">BUY FUND DIP</span>
       <div class="signal-desc"><strong>Dip above the trend line</strong> — the ETF has dropped 3–8% from its 30-day high while still trading above its 100-day moving average. A tactical entry into a fund that remains in an uptrend structurally.</div>
     </div>
     <div class="signal-row">
-      <span class="badge b-trendup">📈 ETF TREND UP</span>
+      <span class="badge b-trendup">ETF TREND UP</span>
       <div class="signal-desc"><strong>Trend strength confirmed</strong> — price is within 2% of its 30-day high AND more than 5% above its 100-day MA. The fund is showing broad-based momentum with minimal pullback.</div>
     </div>
     <div class="signal-row">
@@ -479,13 +550,13 @@ td.m-sig-col { vertical-align: middle; }
       <div class="signal-desc"><strong>Neutral or below the trend</strong> — ETF is either in a neutral zone or trading below its 100-day MA, which disqualifies it from both signals regardless of other conditions.</div>
     </div>
 
-    <h2>⛏ Commodity Signals</h2>
+    <h2>Commodity Signals</h2>
     <div class="signal-row">
-      <span class="badge b-cyclical">⚒ BUY CYCLICAL DIP</span>
+      <span class="badge b-cyclical">BUY CYCLICAL DIP</span>
       <div class="signal-desc"><strong>Macro accumulation zone</strong> — the commodity proxy has dropped 6–18% from its 30-day peak AND is within 15% of its 52-week low. Targets cyclical assets at historically attractive re-entry points.</div>
     </div>
     <div class="signal-row">
-      <span class="badge b-uptrend">📈 STRUCTURAL UPTREND</span>
+      <span class="badge b-uptrend">STRUCTURAL UPTREND</span>
       <div class="signal-desc"><strong>Macro tailwind intact</strong> — price is above the 30-day, 100-day, and 200-day moving averages, confirming a sustained structural uptrend across multiple timeframes.</div>
     </div>
 
@@ -494,7 +565,7 @@ td.m-sig-col { vertical-align: middle; }
       <thead><tr><th>COLUMN</th><th>DESCRIPTION</th></tr></thead>
       <tbody>
         <tr><td>DAY %</td><td>Price change since yesterday's close. Positive = up, negative = down.</td></tr>
-        <tr><td>DROP vs 30d HIGH</td><td>How far the price sits relative to its 30-day peak. <strong>Negative values (green) mean the price is currently above that peak</strong> — a good sign, sometimes due to data timing. Positive values indicate how much it has pulled back.</td></tr>
+        <tr><td>DROP vs 30d HIGH</td><td>How far the price sits relative to its 30-day peak — same sign convention as DAY%. <strong>Negative values (red) mean the price has pulled back from its 30-day peak.</strong> Positive values (green) mean the price is currently above that peak — a favorable sign, though sometimes reflects data timing.</td></tr>
         <tr><td>MCAP $B</td><td>Market capitalisation in billions USD. Quality filter: signals only fire for MCap ≥ $8B.</td></tr>
         <tr><td>P/E</td><td>Price-to-earnings ratio. Quality filter: signals only fire for P/E ≤ 55 (or if no P/E data is available).</td></tr>
         <tr><td>vs 100d MA</td><td>How far the current price sits above or below the 100-day moving average. Positive = above MA (bullish), negative = below (bearish).</td></tr>
@@ -502,32 +573,35 @@ td.m-sig-col { vertical-align: middle; }
       </tbody>
     </table>
 
-    <div class="note">⚠ <strong>Not financial advice.</strong> This dashboard is a personal screening tool to surface names worth researching further. Signals indicate conditions that historically precede opportunities — they do not guarantee future performance. Always do your own due diligence before making any investment decision.</div>
+    <div class="note"><strong>Not financial advice.</strong> This dashboard is a personal screening tool to surface names worth researching further. Signals indicate conditions that historically precede opportunities — they do not guarantee future performance. Always do your own due diligence before making any investment decision.</div>
 
   </div>
 </div>
 
 <script>
 // ── CSV Source URLs ────────────────────────────────────────────────────────────
-const URL_STOCKS = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=1385506075';
-const URL_ETFS   = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=721809866';
-const URL_COMMS  = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=1799164196';
+const URL_STOCKS    = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=1385506075';
+const URL_ETFS      = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=721809866';
+const URL_COMMS     = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/gviz/tq?tqx=out:csv&gid=1799164196';
+const URL_INSIGHTS  = 'https://docs.google.com/spreadsheets/d/1jVpJb6BqACMKYH4FuyjqaztNCq379cAxaqVkXSAr8n4/export?format=csv&gid=1196326561';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let DATA   = { stocks: [], etfs: [], comms: [] };
-let FILTER = { stocks: 'all', etfs: 'all', comms: 'all' };
+let DATA     = { stocks: [], etfs: [], comms: [] };
+let FILTER   = { stocks: 'all', etfs: 'all', comms: 'all' };
 let INDUSTRY = '';
-let SEARCH = { stocks: '', etfs: '', comms: '' };
-let SORT   = {
+let SEARCH   = { stocks: '', etfs: '', comms: '' };
+let SORT     = {
   stocks: { col: 8, dir: -1 },
   etfs:   { col: 7, dir: -1 },
   comms:  { col: 7, dir: -1 }
 };
+let PAGE     = { stocks: 1, etfs: 1, comms: 1 };
+const PAGE_SIZE = 20;
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
-  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+  document.getElementById('theme-btn').textContent = isLight ? 'DARK' : 'LIGHT';
   try { localStorage.setItem('mkt-theme', isLight ? 'light' : 'dark'); } catch(e) {}
 }
 (function initTheme() {
@@ -537,7 +611,7 @@ function toggleTheme() {
     document.body.classList.add('light');
     document.addEventListener('DOMContentLoaded', () => {
       const btn = document.getElementById('theme-btn');
-      if (btn) btn.textContent = '🌙';
+      if (btn) btn.textContent = 'DARK';
     });
   }
 })();
@@ -578,13 +652,9 @@ function fmtB(v)   { return v == null ? '—' : '$' + v.toFixed(1) + 'B'; }
 function fmtPE(v)  { return v == null ? '—' : v.toFixed(1) + 'x'; }
 function pcls(v)   { return v == null ? 'neu' : v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu'; }
 
-// DROP column: negative = price ABOVE 30d high (good = green), positive = dropped (bad = red)
-function dropCls(v) {
-  if (v == null) return 'neu';
-  if (v < 0)    return 'pos';  // above 30d high — good
-  if (v > 0)    return 'neg';  // dropped from 30d high — bad
-  return 'neu';
-}
+// DROP column uses same sign convention as DAY%:
+// negative = fell from 30d high (bad = red), positive = above 30d high (good = green)
+// The raw sheet value is inverted (positive = dropped), so we negate at parse time.
 
 function pctDev(price, ma) {
   if (price == null || ma == null || ma === 0) return null;
@@ -613,12 +683,12 @@ function commSig(action) {
 
 function badge(sig) {
   const M = {
-    dip:      ['b-dip',      '🔥 BUY GUARDED DIP'],
-    momentum: ['b-momentum', '📈 MOMENTUM ALERT'],
-    funddip:  ['b-funddip',  '💎 BUY FUND DIP'],
-    trendup:  ['b-trendup',  '📈 ETF TREND UP'],
-    cyclical: ['b-cyclical', '⚒ BUY CYCLICAL DIP'],
-    uptrend:  ['b-uptrend',  '📈 STRUCTURAL UPTREND'],
+    dip:      ['b-dip',      'GUARDED DIP'],
+    momentum: ['b-momentum', 'MOMENTUM'],
+    funddip:  ['b-funddip',  'BUY FUND DIP'],
+    trendup:  ['b-trendup',  'ETF TREND UP'],
+    cyclical: ['b-cyclical', 'BUY CYCLICAL DIP'],
+    uptrend:  ['b-uptrend',  'STRUCTURAL UPTREND'],
     hold:     ['b-hold',     'HOLD'],
   };
   const [cls, lbl] = M[sig] || M.hold;
@@ -651,6 +721,7 @@ function sSort(tab, col) {
   const s = SORT[tab];
   s.dir = s.col === col ? -s.dir : -1;
   s.col = col;
+  PAGE[tab] = 1;
   ({ stocks: renderStocks, etfs: renderETFs, comms: renderComms })[tab]();
 }
 
@@ -667,6 +738,21 @@ function updateSortHeaders(tableId, sortState) {
       chip.classList.add(sortState.dir === 1 ? 'm-chip-sa' : 'm-chip-sd');
     }
   });
+}
+
+function goPage(tab, page) {
+  PAGE[tab] = page;
+  ({ stocks: renderStocks, etfs: renderETFs, comms: renderComms })[tab]();
+}
+
+function renderPagination(tab, current, total) {
+  const el = document.getElementById(tab + '-pagination');
+  if (!el) return;
+  if (total <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <button class="page-btn" onclick="goPage('${tab}',${current-1})" ${current<=1?'disabled':''}>← Prev</button>
+    <span class="page-info">${current} / ${total}</span>
+    <button class="page-btn" onclick="goPage('${tab}',${current+1})" ${current>=total?'disabled':''}>Next →</button>`;
 }
 
 function sortRows(rows, keys, sortState) {
@@ -696,7 +782,11 @@ function renderStocks() {
   const keys = ['ticker','name','industry','price','dod','drop','mcap','pe','sig'];
   rows = sortRows(rows, keys, SORT.stocks);
 
-  document.getElementById('stocks-body').innerHTML = rows.map(r => `
+  const sTotal = Math.ceil(rows.length / PAGE_SIZE) || 1;
+  PAGE.stocks  = Math.min(Math.max(PAGE.stocks, 1), sTotal);
+  const sRows  = rows.slice((PAGE.stocks - 1) * PAGE_SIZE, PAGE.stocks * PAGE_SIZE);
+
+  document.getElementById('stocks-body').innerHTML = sRows.map(r => `
     <tr>
       <td class="ticker">${r.ticker}</td>
       <!-- Desktop -->
@@ -704,7 +794,7 @@ function renderStocks() {
       <td class="d-col"><div class="industry" title="${r.industry}">${r.industry}</div></td>
       <td class="d-col num">${fmtP(r.price)}</td>
       <td class="d-col num ${pcls(r.dod)}">${fmtPct(r.dod)}</td>
-      <td class="d-col num ${dropCls(r.drop)}">${fmtPct(r.drop)}</td>
+      <td class="d-col num ${pcls(r.drop)}">${fmtPct(r.drop)}</td>
       <td class="d-col num">${fmtB(r.mcap)}</td>
       <td class="d-col num">${fmtPE(r.pe)}</td>
       <td class="d-col">${badge(r.sig)}</td>
@@ -716,7 +806,7 @@ function renderStocks() {
       <td class="m-col num">
         <div class="m-main">${fmtP(r.price)}</div>
         <div class="m-row"><span class="m-lbl">DAY</span><span class="${pcls(r.dod)}">${fmtPct(r.dod)}</span></div>
-        <div class="m-row"><span class="m-lbl">DROP</span><span class="${dropCls(r.drop)}">${fmtPct(r.drop)}</span></div>
+        <div class="m-row"><span class="m-lbl">DROP</span><span class="${pcls(r.drop)}">${fmtPct(r.drop)}</span></div>
       </td>
       <td class="m-col num">
         <div class="m-fund">
@@ -728,22 +818,25 @@ function renderStocks() {
     </tr>`).join('');
 
   updateSortHeaders('stocks-table', SORT.stocks);
+  renderPagination('stocks', PAGE.stocks, sTotal);
 
   const c = { dip:0, momentum:0, hold:0 };
   DATA.stocks.forEach(r => c[r.sig] = (c[r.sig]||0)+1);
   document.getElementById('stocks-cards').innerHTML = `
     <div class="card"><div class="card-label">TOTAL</div><div class="card-value v-muted">${DATA.stocks.length}</div></div>
-    <div class="card"><div class="card-label">🔥 DIP BUYS</div><div class="card-value v-amber">${c.dip}</div></div>
-    <div class="card"><div class="card-label">📈 MOMENTUM</div><div class="card-value v-green">${c.momentum}</div></div>
+    <div class="card"><div class="card-label">GUARDED DIPS</div><div class="card-value v-amber">${c.dip}</div></div>
+    <div class="card"><div class="card-label">MOMENTUM</div><div class="card-value v-green">${c.momentum}</div></div>
     <div class="card"><div class="card-label">HOLD</div><div class="card-value v-muted">${c.hold}</div></div>`;
 }
 
 function filterStocks() {
+  PAGE.stocks = 1;
   SEARCH.stocks = document.getElementById('stocks-search').value;
   INDUSTRY = document.getElementById('stocks-industry').value;
   renderStocks();
 }
 function setStocksFilter(f, el) {
+  PAGE.stocks = 1;
   FILTER.stocks = f;
   document.querySelectorAll('#panel-stocks .fbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
@@ -771,7 +864,11 @@ function renderETFs() {
   const keys = ['ticker','name','category','price','dod','drop','vsMA','sig'];
   rows = sortRows(rows, keys, SORT.etfs);
 
-  document.getElementById('etfs-body').innerHTML = rows.map(r => `
+  const eTotal = Math.ceil(rows.length / PAGE_SIZE) || 1;
+  PAGE.etfs    = Math.min(Math.max(PAGE.etfs, 1), eTotal);
+  const eRows  = rows.slice((PAGE.etfs - 1) * PAGE_SIZE, PAGE.etfs * PAGE_SIZE);
+
+  document.getElementById('etfs-body').innerHTML = eRows.map(r => `
     <tr>
       <td class="ticker">${r.ticker}</td>
       <!-- Desktop -->
@@ -779,7 +876,7 @@ function renderETFs() {
       <td class="d-col"><div class="industry" title="${r.category}">${r.category}</div></td>
       <td class="d-col num">${fmtP(r.price)}</td>
       <td class="d-col num ${pcls(r.dod)}">${fmtPct(r.dod)}</td>
-      <td class="d-col num ${dropCls(r.drop)}">${fmtPct(r.drop)}</td>
+      <td class="d-col num ${pcls(r.drop)}">${fmtPct(r.drop)}</td>
       <td class="d-col num ${pcls(r.vsMA)}">${r.vsMA != null ? fmtPct(r.vsMA) : '—'}</td>
       <td class="d-col">${badge(r.sig)}</td>
       <!-- Mobile compound -->
@@ -790,25 +887,27 @@ function renderETFs() {
       <td class="m-col num">
         <div class="m-main">${fmtP(r.price)}</div>
         <div class="m-row"><span class="m-lbl">DAY</span><span class="${pcls(r.dod)}">${fmtPct(r.dod)}</span></div>
-        <div class="m-row"><span class="m-lbl">DROP</span><span class="${dropCls(r.drop)}">${fmtPct(r.drop)}</span></div>
+        <div class="m-row"><span class="m-lbl">DROP</span><span class="${pcls(r.drop)}">${fmtPct(r.drop)}</span></div>
         <div class="m-row"><span class="m-lbl">vs100</span><span class="${pcls(r.vsMA)}">${r.vsMA != null ? fmtPct(r.vsMA) : '—'}</span></div>
       </td>
       <td class="m-col m-sig-col">${badge(r.sig)}</td>
     </tr>`).join('');
 
   updateSortHeaders('etfs-table', SORT.etfs);
+  renderPagination('etfs', PAGE.etfs, eTotal);
 
   const c = { funddip:0, trendup:0, hold:0 };
   DATA.etfs.forEach(r => c[r.sig] = (c[r.sig]||0)+1);
   document.getElementById('etfs-cards').innerHTML = `
     <div class="card"><div class="card-label">TOTAL</div><div class="card-value v-muted">${DATA.etfs.length}</div></div>
-    <div class="card"><div class="card-label">💎 FUND DIPS</div><div class="card-value v-cyan">${c.funddip}</div></div>
-    <div class="card"><div class="card-label">📈 TREND UP</div><div class="card-value v-green">${c.trendup}</div></div>
+    <div class="card"><div class="card-label">FUND DIPS</div><div class="card-value v-cyan">${c.funddip}</div></div>
+    <div class="card"><div class="card-label">TREND UP</div><div class="card-value v-green">${c.trendup}</div></div>
     <div class="card"><div class="card-label">HOLD</div><div class="card-value v-muted">${c.hold}</div></div>`;
 }
 
-function filterETFs() { SEARCH.etfs = document.getElementById('etfs-search').value; renderETFs(); }
+function filterETFs() { PAGE.etfs = 1; SEARCH.etfs = document.getElementById('etfs-search').value; renderETFs(); }
 function setETFsFilter(f, el) {
+  PAGE.etfs = 1;
   FILTER.etfs = f;
   document.querySelectorAll('#panel-etfs .fbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
@@ -828,7 +927,11 @@ function renderComms() {
   const keys = ['ticker','name','sector','price','vs30','vs100','vs200','sig'];
   rows = sortRows(rows, keys, SORT.comms);
 
-  document.getElementById('comms-body').innerHTML = rows.map(r => `
+  const cTotal = Math.ceil(rows.length / PAGE_SIZE) || 1;
+  PAGE.comms   = Math.min(Math.max(PAGE.comms, 1), cTotal);
+  const cRows  = rows.slice((PAGE.comms - 1) * PAGE_SIZE, PAGE.comms * PAGE_SIZE);
+
+  document.getElementById('comms-body').innerHTML = cRows.map(r => `
     <tr>
       <td class="ticker">${r.ticker}</td>
       <!-- Desktop -->
@@ -854,33 +957,56 @@ function renderComms() {
     </tr>`).join('');
 
   updateSortHeaders('comms-table', SORT.comms);
+  renderPagination('comms', PAGE.comms, cTotal);
 
   const c = { cyclical:0, uptrend:0, hold:0 };
   DATA.comms.forEach(r => c[r.sig] = (c[r.sig]||0)+1);
   document.getElementById('comms-cards').innerHTML = `
     <div class="card"><div class="card-label">TOTAL</div><div class="card-value v-muted">${DATA.comms.length}</div></div>
-    <div class="card"><div class="card-label">📈 STRUCTURAL UPTREND</div><div class="card-value v-green">${c.uptrend}</div></div>
-    <div class="card"><div class="card-label">⚒ CYCLICAL DIPS</div><div class="card-value v-purple">${c.cyclical}</div></div>
+    <div class="card"><div class="card-label">STRUCTURAL UPTREND</div><div class="card-value v-green">${c.uptrend}</div></div>
+    <div class="card"><div class="card-label">CYCLICAL DIPS</div><div class="card-value v-purple">${c.cyclical}</div></div>
     <div class="card"><div class="card-label">HOLD</div><div class="card-value v-muted">${c.hold}</div></div>`;
 }
 
-function filterComms() { SEARCH.comms = document.getElementById('comms-search').value; renderComms(); }
+function filterComms() { PAGE.comms = 1; SEARCH.comms = document.getElementById('comms-search').value; renderComms(); }
 function setCommsFilter(f, el) {
+  PAGE.comms = 1;
   FILTER.comms = f;
   document.querySelectorAll('#panel-commodities .fbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   renderComms();
 }
 
-// ── Header-row skipper ────────────────────────────────────────────────────────
-function dataRows(rows) {
+// ── Header-row skipper + preamble splitter ────────────────────────────────────
+function splitRows(text) {
+  const allRows = parseCSV(text);
   const isTicker = s => /^[A-Z]{1,5}[A-Z0-9]*$/.test((s || '').trim());
-  const start = rows.findIndex(r => isTicker(r[0]));
-  return start >= 0 ? rows.slice(start) : rows.slice(3);
+  const start = allRows.findIndex(r => isTicker(r[0]));
+  return {
+    preamble: start > 0 ? allRows.slice(0, start) : [],
+    data:     start >= 0 ? allRows.slice(start) : allRows.slice(3)
+  };
+}
+
+// Scan preamble rows for a date/time the Apps Script wrote (e.g. "5/23/2026 14:30")
+function findTimestamp(rows) {
+  const re = /(\d{1,2}\/\d{1,2}\/\d{4}[,\s]+\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?|\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?Z?)/i;
+  for (const row of rows) {
+    for (const cell of row) {
+      if (!cell) continue;
+      const m = String(cell).match(re);
+      if (m) {
+        const d = new Date(m[1]);
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+  }
+  return null;
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 async function loadAll() {
+  loadInsights(); // refresh insights in parallel
   showState('stocks','loading');
   showState('etfs','loading');
   showState('comms','loading');
@@ -892,22 +1018,29 @@ async function loadAll() {
     fetch(URL_COMMS ).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }),
   ]);
 
+  let dataTs = null; // timestamp extracted from sheet preamble rows
+
   // ── Stocks
   // Columns: ticker[0], name[1], industry[2], price[3], dod%[4], high30[5],
   //          drop%[6], mcap[7], pe[8], ma100[9], action[10]
   if (results[0].status === 'fulfilled') {
-    const rows = dataRows(parseCSV(results[0].value));
-    DATA.stocks = rows.filter(r => r[0] && r[0].trim()).map(r => ({
-      ticker:   (r[0]  || '').trim(),
-      name:     (r[1]  || '').trim(),
-      industry: (r[2]  || '').trim(),
-      price:    num(r[3]),
-      dod:      num(r[4]),
-      drop:     num(r[6]),
-      mcap:     num(r[7]),
-      pe:       num(r[8]),
-      sig:      stockSig(r[10] || ''),
-    }));
+    const { preamble, data: rows } = splitRows(results[0].value);
+    if (!dataTs) dataTs = findTimestamp(preamble);
+    DATA.stocks = rows.filter(r => r[0] && r[0].trim()).map(r => {
+      const rawDrop = num(r[6]);
+      return {
+        ticker:   (r[0]  || '').trim(),
+        name:     (r[1]  || '').trim(),
+        industry: (r[2]  || '').trim(),
+        price:    num(r[3]),
+        dod:      num(r[4]),
+        // Negate: sheet stores positive=dropped (bad), we want negative=dropped (bad) like DAY%
+        drop:     rawDrop != null ? -rawDrop : null,
+        mcap:     num(r[7]),
+        pe:       num(r[8]),
+        sig:      stockSig(r[10] || ''),
+      };
+    });
     populateIndustryDropdown();
     renderStocks();
     showState('stocks','content');
@@ -920,17 +1053,19 @@ async function loadAll() {
   // Columns: ticker[0], name[1], category[2], price[3], dod%[4], high30[5],
   //          drop%[6], ma100[7], trend_text[8], action[9]
   if (results[1].status === 'fulfilled') {
-    const rows = dataRows(parseCSV(results[1].value));
+    const { preamble, data: rows } = splitRows(results[1].value);
+    if (!dataTs) dataTs = findTimestamp(preamble);
     DATA.etfs = rows.filter(r => r[0] && r[0].trim()).map(r => {
       const price = num(r[3]);
       const ma100 = num(r[7]);
+      const rawDrop = num(r[6]);
       return {
         ticker:   (r[0] || '').trim(),
         name:     (r[1] || '').trim(),
         category: (r[2] || '').trim(),
         price,
         dod:      num(r[4]),
-        drop:     num(r[6]),
+        drop:     rawDrop != null ? -rawDrop : null,
         vsMA:     pctDev(price, ma100),
         sig:      etfSig(r[9] || ''),
       };
@@ -946,7 +1081,8 @@ async function loadAll() {
   // Columns: ticker[0], name[1], commodity[2], sector[3], price[4],
   //          ma30[5], ma100[6], ma200[7], trend_action[8]
   if (results[2].status === 'fulfilled') {
-    const rows = dataRows(parseCSV(results[2].value));
+    const { preamble, data: rows } = splitRows(results[2].value);
+    if (!dataTs) dataTs = findTimestamp(preamble);
     DATA.comms = rows.filter(r => r[0] && r[0].trim()).map(r => {
       const price = num(r[4]);
       return {
@@ -967,15 +1103,105 @@ async function loadAll() {
     showState('comms','error');
   }
 
-  const now = new Date().toLocaleString('en-US', {
+  const fmtTs = d => d.toLocaleString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
   });
-  document.getElementById('last-updated').textContent = 'Updated ' + now;
+  if (dataTs) {
+    document.getElementById('last-updated').textContent = 'Data as of ' + fmtTs(dataTs);
+  } else {
+    // Fallback: no timestamp found in preamble — show page-load time
+    document.getElementById('last-updated').textContent = 'Fetched ' + fmtTs(new Date());
+  }
+}
+
+// ── Insights renderer ─────────────────────────────────────────────────────────
+function renderInsights(text) {
+  // Parse [SECTION] tagged blocks from Gemini output
+  const sectionRegex = /\[([A-Z]+)\]([\s\S]*?)(?=\[[A-Z]+\]|$)/g;
+  let match, html = '', found = false;
+
+  while ((match = sectionRegex.exec(text)) !== null) {
+    found = true;
+    const title   = match[1].trim();
+    const content = match[2].trim();
+
+    if (title === 'OUTLOOK') {
+      const safe = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html += `<div class="insight-outlook">${safe}</div>`;
+    } else {
+      const bullets = content
+        .split(/\n\s*[-–—]\s+/)
+        .map(b => b.trim().replace(/^[-–—]\s+/, ''))  // strip leading dash from first bullet
+        .filter(b => b);
+      const items = bullets.map(b => {
+        const safe = b.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        // Bold the leading ticker symbol (1-6 uppercase letters/digits at start of line)
+        const highlighted = safe.replace(
+          /^([A-Z][A-Z0-9]{0,5})(\b)/,
+          '<span class="insight-ticker">$1</span>$2'
+        );
+        return `<li>${highlighted}</li>`;
+      }).join('');
+      html += `<div class="insight-section">
+        <div class="insight-label">${title}</div>
+        <ul class="insight-list">${items}</ul>
+      </div>`;
+    }
+  }
+
+  // Fallback: if Gemini didn't use the tagged format, render as plain text
+  if (!found) {
+    const safe = text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html = `<div style="font-size:12px;color:var(--txt2);line-height:1.8">${safe}</div>`;
+  }
+
+  return html;
+}
+
+// ── Insights ──────────────────────────────────────────────────────────────────
+async function loadInsights() {
+  // Show loading state only if the panel is visible
+  document.getElementById('insights-loading').style.display = '';
+  document.getElementById('insights-content').style.display = 'none';
+  document.getElementById('insights-error').style.display   = 'none';
+
+  try {
+    const resp = await fetch(URL_INSIGHTS + '&nocache=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const rows = parseCSV(text);
+
+    // A1 = timestamp (gviz column header), A2 = insight text (gviz data row)
+    // Collect all non-empty cells after the first one and join them
+    let ts = '';
+    const parts = [];
+    for (const row of rows) {
+      for (const col of row) {
+        const cell = (col || '').trim();
+        if (!cell) continue;
+        if (!ts) { ts = cell; continue; }
+        parts.push(cell);
+      }
+    }
+    const msg = parts.join(' ');
+
+    if (!msg) throw new Error('Insights sheet exists but appears empty.');
+
+    document.getElementById('insights-ts').textContent = ts ? 'Generated ' + ts : '';
+    document.getElementById('insights-body').innerHTML  = renderInsights(msg);
+    document.getElementById('insights-loading').style.display = 'none';
+    document.getElementById('insights-content').style.display = '';
+
+  } catch (e) {
+    document.getElementById('insights-loading').style.display  = 'none';
+    document.getElementById('insights-err-msg').textContent    = String(e);
+    document.getElementById('insights-error').style.display    = '';
+  }
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
-loadAll();
+loadAll(); // also calls loadInsights() internally
 </script>
 </body>
 </html>
